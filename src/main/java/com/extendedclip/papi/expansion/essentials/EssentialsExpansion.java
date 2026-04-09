@@ -317,27 +317,30 @@ public class EssentialsExpansion extends PlaceholderExpansion {
         }
 
         if (identifier.startsWith("home_")) {
-            Integer homeNumber;
             final User user = essentials.getUser(player.getUniqueId());
 
             // Removes all the letters from the identifier to get the home slot.
             // Checks if the number slot is an integer or not.
-            if ((homeNumber = Ints.tryParse(identifier.replaceAll("\\D+", ""))) == null) return null;
+            String homeName = identifier.substring("home_".length());
+            Integer homeNumber = Ints.tryParse(homeName);
 
             // Since it is easier for users to type from 1-x I subtract one from the original number to work from 0-x.
-            homeNumber -= 1;
+            if (homeNumber != null) {
+                homeNumber -= 1;
+                // checks if the home is out of bounds and returns and empty string if it is.
+                if (homeNumber >= user.getHomes().size() || homeNumber < 0) return "";
 
-            // checks if the home is out of bounds and returns and empty string if it is.
-            if (homeNumber >= user.getHomes().size() || homeNumber < 0) return "";
-
-            // checks if the identifier matches the pattern home_%d
-            if (identifier.matches("(\\w+_)(\\d+)")) return user.getHomes().get(homeNumber);
+                // checks if the identifier matches the pattern home_%d
+                if (identifier.matches("(\\w+_)(\\d+)")) return user.getHomes().get(homeNumber);
+            }
 
             //checks if the identifier matches the pattern home_%d_(w/x/y/z)
-            if (identifier.matches("(\\w+_)(\\d+)(_\\w)")) {
+            if (identifier.matches("(\\w+_)(\\d+|\\w)(_\\w)")) {
 
                 try {
-                    final Location home = user.getHome(user.getHomes().get(homeNumber));
+                    final Location home = user.getHome(homeNumber == null ? homeName : user.getHomes().get(homeNumber));
+                    if (home == null) return "";
+
                     final StringBuilder stringBuilder = new StringBuilder();
 
                     switch (identifier.charAt(identifier.length() - 1)) {
