@@ -33,7 +33,6 @@ import net.essentialsx.api.v2.services.BalanceTop;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.text.DateFormat;
@@ -60,8 +59,6 @@ public class EssentialsExpansion extends PlaceholderExpansion {
     private Essentials essentials;
     private BalanceTop baltop;
 
-    private final String VERSION = getClass().getPackage().getImplementationVersion();
-
     @Override
     public boolean canRegister() {
         return Bukkit.getPluginManager().getPlugin("Essentials") != null && Bukkit.getPluginManager().getPlugin("Essentials").isEnabled();
@@ -85,22 +82,22 @@ public class EssentialsExpansion extends PlaceholderExpansion {
     }
 
     @Override
-    public @NotNull String getAuthor() {
+    public String getAuthor() {
         return "clip";
     }
 
     @Override
-    public @NotNull String getIdentifier() {
+    public String getIdentifier() {
         return "essentials";
     }
 
     @Override
-    public @NotNull String getVersion() {
-        return VERSION;
+    public String getVersion() {
+        return "1.6.0";
     }
 
     @Override
-    public String onRequest(OfflinePlayer player, @NotNull String identifier) {
+    public String onRequest(OfflinePlayer player, String identifier) {
         final String papiTrue = PlaceholderAPIPlugin.booleanTrue();
         final String papiFalse = PlaceholderAPIPlugin.booleanFalse();
 
@@ -321,48 +318,31 @@ public class EssentialsExpansion extends PlaceholderExpansion {
 
             // Removes all the letters from the identifier to get the home slot.
             // Checks if the number slot is an integer or not.
-            String homeName = identifier.substring("home_".length());
+            int prefix = "home_".length();
+            int last_ = identifier.lastIndexOf("_");
+            String homeName = identifier.substring(prefix, last_ <= prefix ? identifier.length() : last_);
             Integer homeNumber = Ints.tryParse(homeName);
 
             // Since it is easier for users to type from 1-x I subtract one from the original number to work from 0-x.
             if (homeNumber != null) {
-                homeNumber -= 1;
+                --homeNumber;
                 // checks if the home is out of bounds and returns and empty string if it is.
                 if (homeNumber >= user.getHomes().size() || homeNumber < 0) return "";
 
                 // checks if the identifier matches the pattern home_%d
-                if (identifier.matches("(\\w+_)(\\d+)")) return user.getHomes().get(homeNumber);
+                if (identifier.equals("home_" + homeName)) return user.getHomes().get(homeNumber);
             }
 
-            //checks if the identifier matches the pattern home_%d_(w/x/y/z)
-            if (identifier.matches("(\\w+_)(\\d+|\\w)(_\\w)")) {
+            final Location home = user.getHome(homeNumber == null ? homeName : user.getHomes().get(homeNumber));
+            if (home == null) return "";
 
-                try {
-                    final Location home = user.getHome(homeNumber == null ? homeName : user.getHomes().get(homeNumber));
-                    if (home == null) return "";
-
-                    final StringBuilder stringBuilder = new StringBuilder();
-
-                    switch (identifier.charAt(identifier.length() - 1)) {
-                        case 'w':
-                            stringBuilder.append(home.getWorld().getName());
-                            break;
-                        case 'x':
-                            stringBuilder.append(coordsFormat.format(home.getX()));
-                            break;
-                        case 'y':
-                            stringBuilder.append((int) home.getY());
-                            break;
-                        case 'z':
-                            stringBuilder.append(coordsFormat.format(home.getZ()));
-                            break;
-                    }
-
-                    return stringBuilder.toString();
-                } catch (Exception e) {
-                    return null;
-                }
-            }
+            return switch (identifier.charAt(identifier.length() - 1)) {
+                case 'w' -> home.getWorld().getName();
+                case 'x' -> coordsFormat.format(home.getX());
+                case 'y' -> coordsFormat.format(home.getY());
+                case 'z' -> coordsFormat.format(home.getZ());
+                default -> null;
+            };
         }
 
         if (identifier.startsWith("worth")) {
