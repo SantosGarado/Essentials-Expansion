@@ -8,7 +8,7 @@ version = "2.0.0"
 repositories {
     mavenCentral()
     maven("https://hub.spigotmc.org/nexus/content/groups/public/")
-    maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
+    maven("https://repo.helpch.at/releases/")
     maven("https://repo.essentialsx.net/releases/")
 }
 
