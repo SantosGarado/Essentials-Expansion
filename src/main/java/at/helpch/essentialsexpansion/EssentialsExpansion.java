@@ -26,6 +26,11 @@ import com.earth2me.essentials.User;
 import com.earth2me.essentials.utils.DateUtil;
 import com.earth2me.essentials.utils.DescParseTickFormat;
 
+import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import com.google.common.primitives.Ints;
 import me.clip.placeholderapi.PlaceholderAPIPlugin;
@@ -34,7 +39,6 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.clip.placeholderapi.expansion.Taskable;
 import net.essentialsx.api.v2.services.BalanceTop;
 
-import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -136,6 +140,7 @@ public class EssentialsExpansion extends PlaceholderExpansion implements Taskabl
 
     private Essentials essentials;
     private BalanceTop baltop;
+    private BukkitTask refreshTask = null;
 
     @Override
     public @NotNull String getAuthor() {
@@ -169,7 +174,8 @@ public class EssentialsExpansion extends PlaceholderExpansion implements Taskabl
                 "formatting.millions", "m",
                 "formatting.billions", "b",
                 "formatting.trillions", "t",
-                "formatting.quadrillions", "q"
+                "formatting.quadrillions", "q",
+                "baltop.refresh", 5L
         );
     }
 
@@ -182,14 +188,20 @@ public class EssentialsExpansion extends PlaceholderExpansion implements Taskabl
             put(1000000L, getString("formatting.millions", "m"));
             put(1000L, getString("formatting.thousands", "k"));
         }};
-        essentials = (Essentials) Bukkit.getPluginManager().getPlugin("Essentials");
+        essentials = (Essentials) getPlaceholderAPI().getServer().getPluginManager().getPlugin("Essentials");
         assert essentials != null;
         baltop = essentials.getBalanceTop();
-        baltop.calculateBalanceTopMapAsync();
+        long refresh = getLong("baltop.refresh", 5);
+        if (refresh > 0) {
+            refreshTask = getPlaceholderAPI().getServer().getScheduler().runTaskTimerAsynchronously(getPlaceholderAPI(), () -> baltop.calculateBalanceTopMapAsync(), 0, refresh * 20L);
+        }
     }
 
     @Override
-    public void stop() {}
+    public void stop() {
+        if (refreshTask != null) refreshTask.cancel();
+        refreshTask = null;
+    }
 
     @Override
     public String onRequest(OfflinePlayer player, String params) {
