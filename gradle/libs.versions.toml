@@ -1,5 +1,5 @@
 [versions]
-spigot = "1.20.5-R0.1-SNAPSHOT"
+spigot = "26.1.2-R0.1-SNAPSHOT"
 papi = "2.12.2"
 ess = "2.21.2"
 
