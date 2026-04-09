@@ -130,7 +130,6 @@ public class EssentialsExpansion extends PlaceholderExpansion implements Taskabl
                 ).flatMap(s->s).map(placeholder -> "home_" + placeholder)
 
         ).flatMap(s->s).map(placeholder -> "%essentials_" + placeholder + "%").toList();
-        System.out.println(placeholders);
     }
 
     private Map<Long, String> formats;
@@ -422,7 +421,6 @@ public class EssentialsExpansion extends PlaceholderExpansion implements Taskabl
 
     private String fixMoney(double d) {
         for (Map.Entry<Long, String> format : formats.entrySet()) {
-            System.out.println(d + " >= " + format.getKey() + " | " + d / format.getKey());
             if (d < format.getKey()) continue;
             numberFormat.setMaximumFractionDigits(2);
             numberFormat.setMinimumFractionDigits(0);
