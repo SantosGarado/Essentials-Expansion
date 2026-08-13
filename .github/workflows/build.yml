@@ -1,0 +1,33 @@
+name: Build Essentials Expansion
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Build
+        run: ./gradlew clean build
+
+      - name: Upload expansion JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: Essentials-Expansion-2.0.0
+          path: build/libs/*.jar
